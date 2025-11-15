@@ -66,7 +66,6 @@ namespace zk {
 #else
 	#define ZERO_MEM(member) bzero(&(member), sizeof(member))
 #endif
-#define _LL_CAST_ (long long)
 #define _LLP_CAST_ (long long *)
 
 #define THROW_IF_NOT(condition, text) if (!(condition)) { \
@@ -514,7 +513,7 @@ public:
     static Local<String> idAsString (int64_t id) {
         Nan::EscapableHandleScope scope;
         char idbuff [128] = {0};
-        sprintf(idbuff, "%llx", _LL_CAST_ id);
+        snprintf(idbuff, sizeof(idbuff), "%llx", (unsigned long long) id);
         return scope.Escape(LOCAL_STRING(idbuff));
     }
 
@@ -1027,7 +1026,7 @@ public:
         CALLBACK_EPILOG();
     }
 
-    static NAN_PROPERTY_GETTER(StatePropertyGetter) {
+    static NAN_GETTER(StatePropertyGetter) {
         assert(info.This().IsEmpty() == false);
         assert(info.This()->IsObject());
         ZooKeeper *zk = ObjectWrap::Unwrap<ZooKeeper>(info.This());
@@ -1036,25 +1035,25 @@ public:
         RETURN_VALUE(info, Nan::New<Integer> (zk->zhandle != 0 ? zoo_state(zk->zhandle) : 0));
     }
 
-    static NAN_PROPERTY_GETTER(ClientidPropertyGetter) {
+    static NAN_GETTER(ClientidPropertyGetter) {
         ZooKeeper *zk = ObjectWrap::Unwrap<ZooKeeper>(info.This());
         assert(zk);
         RETURN_VALUE(info, zk->idAsString(zk->zhandle != 0 ? zoo_client_id(zk->zhandle)->client_id : zk->myid.client_id));
     }
 
-    static NAN_PROPERTY_GETTER(ClientPasswordPropertyGetter) {
+    static NAN_GETTER(ClientPasswordPropertyGetter) {
         ZooKeeper *zk = ObjectWrap::Unwrap<ZooKeeper>(info.This());
         assert(zk);
         RETURN_VALUE(info, zk->PasswordToHexString(zk->zhandle != 0 ? zoo_client_id(zk->zhandle)->passwd : zk->myid.passwd));
     }
 
-    static NAN_PROPERTY_GETTER(SessionTimeoutPropertyGetter) {
+    static NAN_GETTER(SessionTimeoutPropertyGetter) {
         ZooKeeper *zk = ObjectWrap::Unwrap<ZooKeeper>(info.This());
         assert(zk);
         RETURN_VALUE(info, Nan::New<Integer> (zk->zhandle != 0 ? zoo_recv_timeout(zk->zhandle) : -1));
     }
 
-    static NAN_PROPERTY_GETTER(IsUnrecoverablePropertyGetter) {
+    static NAN_GETTER(IsUnrecoverablePropertyGetter) {
         ZooKeeper *zk = ObjectWrap::Unwrap<ZooKeeper>(info.This());
         assert(zk);
         RETURN_VALUE(info, Nan::New<Integer> (zk->zhandle != 0 ? is_unrecoverable(zk->zhandle) : 0));
